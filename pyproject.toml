@@ -8,6 +8,7 @@ authors = ["Pauline Hidalgo <Pauline.Hidalgo@jhuapl.edu>"]
 python = ">=3.8,<3.9.7 || >3.9.7,<4.0"
 streamlit = "^1.12.2"
 pandas = "^1.4.3"
+gsheetsdb = "^0.1.13"
 
 [tool.poetry.dev-dependencies]
 
