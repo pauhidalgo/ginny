@@ -9,6 +9,7 @@ url = f'mongodb+srv://{st.secrets["mongo"]["username"]}:{st.secrets["mongo"]["pa
 def init_connection():
     return pymongo.MongoClient(url)
 
+
 client = init_connection()
 
 # Pull data from the collection.
@@ -19,6 +20,7 @@ def get_data():
     items = db.myplants.find()
     items = list(items)  # make hashable for st.experimental_memo
     return items
+
 
 items = get_data()
 
