@@ -12,6 +12,7 @@ url = f'mongodb+srv://{st.secrets["mongo"]["username"]}:{st.secrets["mongo"]["pa
 def init_connection():
     return pymongo.MongoClient(url)
 
+
 client = init_connection()
 
 # Pull data from the collection.
@@ -21,31 +22,38 @@ def get_data():
     items = list(items)
     return items
 
-def register_new_plant(plant_name: str): 
+
+def register_new_plant(plant_name: str):
     db = client.plantbase
     # Default plant as watered on registered date
-    doc = {"name": plant_name, "dates_watered": [datetime.now().strftime("%m/%d/%Y")], "dates_fertilized": []}
+    doc = {
+        "name": plant_name,
+        "dates_watered": [datetime.now().strftime("%m/%d/%Y")],
+        "dates_fertilized": [],
+    }
     db.myplants.insert_one(doc)
 
 
-def complete_action_by_date(plants_to_update: List[str], action_col: str, date_completed=datetime.now()): 
+def complete_action_by_date(
+    plants_to_update: List[str], action_col: str, date_completed=datetime.now()
+):
     db = client.plantbase
-    for plant in plants_to_update: 
+    for plant in plants_to_update:
         db.myplants.update_one(
-            {"name": plant}, 
-            {"$push": {action_col: date_completed.strftime("%m/%d/%Y")}}
+            {"name": plant},
+            {"$push": {action_col: date_completed.strftime("%m/%d/%Y")}},
         )
     st.write(db.myplants.find())
 
-def format_days_since(days_since: int, prev_date: datetime): 
-    if days_since == 0: 
+
+def format_days_since(days_since: int, prev_date: datetime):
+    if days_since == 0:
         day_str = "Today"
-    elif days_since == 1: 
+    elif days_since == 1:
         day_str = "Yesterday"
-    else: 
+    else:
         day_str = f"{days_since_water} days ago"
     return f"{day_str} - {prev_date.strftime('%b %d, %Y')}"
-
 
 
 # Build application
@@ -61,13 +69,21 @@ col3.subheader("Actions")
 
 # Define actions
 selected_plants = []
-col3.button("Water 💦", on_click=complete_action_by_date, kwargs={"plants_to_update": selected_plants, "action_col": "dates_watered"})
-col3.button("Fertilize 🧪", on_click=complete_action_by_date, kwargs={"plants_to_update": selected_plants, "action_col": "dates_fertilized"})
+col3.button(
+    "Water 💦",
+    on_click=complete_action_by_date,
+    kwargs={"plants_to_update": selected_plants, "action_col": "dates_watered"},
+)
+col3.button(
+    "Fertilize 🧪",
+    on_click=complete_action_by_date,
+    kwargs={"plants_to_update": selected_plants, "action_col": "dates_fertilized"},
+)
 
 new_plant_form = col3.form(key="add_plant", clear_on_submit=True)
 new_plant_name = new_plant_form.text_input(label="Add plant 🌿")
-submitted  = new_plant_form.form_submit_button(label='Add')
-if submitted: 
+submitted = new_plant_form.form_submit_button(label="Add")
+if submitted:
     register_new_plant(new_plant_name)
 
 # Populate view
@@ -83,7 +99,4 @@ for item in items:
             selected_plants.append(name)
 
     with col2:
-        st.write(format_days_since(days_since_water, last_watered_date)) 
-
-# TODO remove after debugging
-st.write(selected_plants)
+        st.write(format_days_since(days_since_water, last_watered_date))
