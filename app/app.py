@@ -1,8 +1,14 @@
-from time import strptime
-import streamlit as st
-import pymongo
 from datetime import datetime
 from typing import List
+
+import pandas as pd
+import pymongo
+import streamlit as st
+
+from plots import TimelinePlot
+
+# Set page name and icon
+st.set_page_config(page_title="Ginny", page_icon="🌱")
 
 url = f'mongodb+srv://{st.secrets["mongo"]["username"]}:{st.secrets["mongo"]["password"]}@plantbase.zb3enmb.mongodb.net/?retryWrites=true&w=majority'
 
@@ -15,17 +21,24 @@ def init_connection():
 
 client = init_connection()
 
-# Pull data from the collection.
+
 def get_data():
+    # Pull data from the collection.
     db = client.plantbase
     items = db.myplants.find()
     items = list(items)
+
+    # Convert dates to datetime
+    for item in items:
+        item["dates_watered"] = pd.to_datetime(
+            item["dates_watered"], infer_datetime_format=True
+        )
     return items
 
 
 def register_new_plant(plant_name: str):
     db = client.plantbase
-    # Default plant as watered on registered date
+    # Default mark plant as watered on registered date
     doc = {
         "name": plant_name,
         "dates_watered": [datetime.now().strftime("%m/%d/%Y")],
@@ -37,13 +50,13 @@ def register_new_plant(plant_name: str):
 def complete_action_by_date(
     plants_to_update: List[str], action_col: str, date_completed=datetime.now()
 ):
+    # Log an action for a plant (e.g. water)
     db = client.plantbase
     for plant in plants_to_update:
         db.myplants.update_one(
             {"name": plant},
             {"$push": {action_col: date_completed.strftime("%m/%d/%Y")}},
         )
-    st.write(db.myplants.find())
 
 
 def format_days_since(days_since: int, prev_date: datetime):
@@ -88,9 +101,11 @@ if submitted:
 
 # Populate view
 items = get_data()
+# Sort items from least to most recently watered
+items = [d for d in sorted(items, key=lambda i: i["dates_watered"][-1])]
 for item in items:
     name = item["name"]
-    last_watered_date = datetime.strptime(item["dates_watered"][-1], "%m/%d/%Y")
+    last_watered_date = item["dates_watered"][-1]
     days_since_water = (datetime.now() - last_watered_date).days
 
     with col1:
@@ -100,3 +115,9 @@ for item in items:
 
     with col2:
         st.write(format_days_since(days_since_water, last_watered_date))
+
+# Add plot under expander for mobile
+st.markdown("## Data viz")
+with st.expander("Display", expanded=False): 
+    tplot = TimelinePlot(items)
+    st.pyplot(fig=tplot.get_fig())
