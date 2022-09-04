@@ -44,7 +44,7 @@ class TimelinePlot(ABC):  # Hardcoded to watering for now
 
         ax.set_yticks(y_ticks)
         ax.set_yticklabels(y_labels)
-        ax.tick_params(axis="both", which="major", labelsize=9)
+        ax.tick_params(axis="both", which="major", labelsize=7)
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b\n%Y"))
         ax.yaxis.set_major_locator(MultipleLocator(1))
 

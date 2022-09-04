@@ -116,7 +116,8 @@ for item in items:
     with col2:
         st.write(format_days_since(days_since_water, last_watered_date))
 
-# Add plot
+# Add plot under expander for mobile
 st.markdown("## Data viz")
-tplot = TimelinePlot(items)
-st.pyplot(fig=tplot.get_fig())
+with st.expander("Display", expanded=False): 
+    tplot = TimelinePlot(items)
+    st.pyplot(fig=tplot.get_fig())
