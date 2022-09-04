@@ -4,6 +4,9 @@ import pymongo
 from datetime import datetime
 from typing import List
 
+# Set page name and icon
+st.set_page_config(page_title="Ginny", page_icon="🌱")
+
 url = f'mongodb+srv://{st.secrets["mongo"]["username"]}:{st.secrets["mongo"]["password"]}@plantbase.zb3enmb.mongodb.net/?retryWrites=true&w=majority'
 
 # Initialize connection.
@@ -57,6 +60,7 @@ def format_days_since(days_since: int, prev_date: datetime):
 
 
 # Build application
+
 st.markdown("# Plant tracker 🌱")
 
 st.date_input("View calendar")
