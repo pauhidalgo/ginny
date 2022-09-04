@@ -6,6 +6,7 @@ import matplotlib
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 from matplotlib.ticker import MultipleLocator
 
 
@@ -21,6 +22,7 @@ class TimelinePlot(ABC):  # Hardcoded to watering for now
 
         freqs = self.compute_frequencies()
         # Define color map based on watering frequencies
+        freqs = [f for f in freqs if f < 1 and f > 0]
         norm = matplotlib.colors.Normalize(vmin=min(freqs), vmax=max(freqs), clip=True)
         mapper = matplotlib.cm.ScalarMappable(norm=norm, cmap="viridis")
 
@@ -59,7 +61,11 @@ class TimelinePlot(ABC):  # Hardcoded to watering for now
         freqs = []
         for item in self.items:
             dates_col = pd.to_datetime(item["dates_watered"])
-            freq = len(dates_col) / (datetime.now() - dates_col.min()).days
+            dates_owned = (datetime.now() - dates_col.min()).days
+            if dates_owned > 0:
+                freq = len(dates_col) / (datetime.now() - dates_col.min()).days
+            else:
+                freq = 1
             item["watering_frequency"] = freq
             freqs.append(freq)
         return freqs
