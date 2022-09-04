@@ -18,7 +18,9 @@ url = f'mongodb+srv://{st.secrets["mongo"]["username"]}:{st.secrets["mongo"]["pa
 def init_connection():
     return pymongo.MongoClient(url)
 
+
 client = init_connection()
+
 
 def get_data():
     # Pull data from the collection.
@@ -27,8 +29,10 @@ def get_data():
     items = list(items)
 
     # Convert dates to datetime
-    for item in items: 
-        item['dates_watered'] = pd.to_datetime(item['dates_watered'], infer_datetime_format=True)
+    for item in items:
+        item["dates_watered"] = pd.to_datetime(
+            item["dates_watered"], infer_datetime_format=True
+        )
     return items
 
 
@@ -98,7 +102,7 @@ if submitted:
 # Populate view
 items = get_data()
 # Sort items from least to most recently watered
-items = [d for d in sorted(items, key=lambda i: i['dates_watered'][-1])]
+items = [d for d in sorted(items, key=lambda i: i["dates_watered"][-1])]
 for item in items:
     name = item["name"]
     last_watered_date = item["dates_watered"][-1]
