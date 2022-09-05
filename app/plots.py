@@ -22,7 +22,7 @@ class TimelinePlot(ABC):  # Hardcoded to watering for now
 
         freqs = self.compute_frequencies()
         # Define color map based on watering frequencies
-        freqs = [f for f in freqs if f < 1 and f > 0]
+        freqs = [f for f in freqs if f < 0.2 and f > 0]
         norm = matplotlib.colors.Normalize(vmin=min(freqs), vmax=max(freqs), clip=True)
         mapper = matplotlib.cm.ScalarMappable(norm=norm, cmap="viridis")
 
