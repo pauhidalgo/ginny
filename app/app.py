@@ -73,10 +73,23 @@ def format_days_since(days_since: int, prev_date: datetime):
 st.markdown("# Plant tracker 🌱")
 
 # Define actions in sidebar
+selected_plants = []
 with st.sidebar:
     st.markdown("# Actions")
+
+    # Date input
     action_date = st.date_input("Set date")
-    selected_plants = []
+
+    # New plant input
+    new_plant_form = st.form(key="add_plant", clear_on_submit=True)
+    new_plant_name = new_plant_form.text_input(
+        label="Add plant 🌿", placeholder="New plant"
+    )
+    submitted = new_plant_form.form_submit_button(label="Add")
+    if submitted:
+        register_new_plant(new_plant_name)
+
+    # Water action
     st.button(
         "Water 💦",
         on_click=complete_action_by_date,
@@ -86,6 +99,8 @@ with st.sidebar:
             "date_completed": action_date,
         },
     )
+
+    # Fertilize action
     st.button(
         "Fertilize 🧪",
         on_click=complete_action_by_date,
@@ -95,13 +110,7 @@ with st.sidebar:
             "date_completed": action_date,
         },
     )
-    new_plant_form = st.form(key="add_plant", clear_on_submit=True)
-    new_plant_name = new_plant_form.text_input(
-        label="Add plant 🌿", placeholder="New plant"
-    )
-    submitted = new_plant_form.form_submit_button(label="Add")
-    if submitted:
-        register_new_plant(new_plant_name)
+
 
 # Populate plants view
 col1, col2 = st.columns(2)  # plant, last watered
