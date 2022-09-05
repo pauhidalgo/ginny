@@ -30,8 +30,8 @@ def get_data():
 
     # Convert dates to datetime
     for item in items:
-        item["dates_watered"] = pd.to_datetime(
-            item["dates_watered"], infer_datetime_format=True
+        item["dates_watered"] = sorted(
+            pd.to_datetime(item["dates_watered"], infer_datetime_format=True)
         )
     return items
 
@@ -66,44 +66,54 @@ def format_days_since(days_since: int, prev_date: datetime):
         day_str = "Yesterday"
     else:
         day_str = f"{days_since_water} days ago"
-    return f"{day_str} - {prev_date.strftime('%b %d, %Y')}"
+    return f"**{day_str}** - {prev_date.strftime('%b %d, %Y')}"
 
 
 # Build application
 st.markdown("# Plant tracker 🌱")
 
-st.date_input("View calendar")
+# Define actions in sidebar
+with st.sidebar:
+    st.markdown("# Actions")
+    action_date = st.date_input("Set date")
+    selected_plants = []
+    st.button(
+        "Water 💦",
+        on_click=complete_action_by_date,
+        kwargs={
+            "plants_to_update": selected_plants,
+            "action_col": "dates_watered",
+            "date_completed": action_date,
+        },
+    )
+    st.button(
+        "Fertilize 🧪",
+        on_click=complete_action_by_date,
+        kwargs={
+            "plants_to_update": selected_plants,
+            "action_col": "dates_fertilized",
+            "date_completed": action_date,
+        },
+    )
+    new_plant_form = st.form(key="add_plant", clear_on_submit=True)
+    new_plant_name = new_plant_form.text_input(
+        label="Add plant 🌿", placeholder="New plant"
+    )
+    submitted = new_plant_form.form_submit_button(label="Add")
+    if submitted:
+        register_new_plant(new_plant_name)
 
-col1, col2, col3 = st.columns(3)  # plant, last watered, actions
+# Populate plants view
+col1, col2 = st.columns(2)  # plant, last watered
 
 col1.subheader("Plant")
 col2.subheader("Last watered")
-col3.subheader("Actions")
 
-# Define actions
-selected_plants = []
-col3.button(
-    "Water 💦",
-    on_click=complete_action_by_date,
-    kwargs={"plants_to_update": selected_plants, "action_col": "dates_watered"},
-)
-col3.button(
-    "Fertilize 🧪",
-    on_click=complete_action_by_date,
-    kwargs={"plants_to_update": selected_plants, "action_col": "dates_fertilized"},
-)
-
-new_plant_form = col3.form(key="add_plant", clear_on_submit=True)
-new_plant_name = new_plant_form.text_input(label="Add plant 🌿")
-submitted = new_plant_form.form_submit_button(label="Add")
-if submitted:
-    register_new_plant(new_plant_name)
-
-# Populate view
 items = get_data()
 # Sort items from least to most recently watered
 items = [d for d in sorted(items, key=lambda i: i["dates_watered"][-1])]
 for item in items:
+    col1, col2 = st.columns(2)
     name = item["name"]
     last_watered_date = item["dates_watered"][-1]
     days_since_water = (datetime.now() - last_watered_date).days
@@ -114,10 +124,11 @@ for item in items:
             selected_plants.append(name)
 
     with col2:
-        st.write(format_days_since(days_since_water, last_watered_date))
+        st.markdown(format_days_since(days_since_water, last_watered_date))
+
 
 # Add plot under expander for mobile
 st.markdown("## Data viz")
-with st.expander("Display", expanded=False): 
+with st.expander("Display", expanded=False):
     tplot = TimelinePlot(items)
     st.pyplot(fig=tplot.get_fig())
