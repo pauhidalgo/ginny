@@ -28,11 +28,18 @@ def get_data():
     items = db.myplants.find()
     items = list(items)
 
-    # Convert dates to datetime
+    # Convert dates to datetime and compute watering frequencies
     for item in items:
         item["dates_watered"] = sorted(
             pd.to_datetime(item["dates_watered"], infer_datetime_format=True)
         )
+        dates_owned = (datetime.now() - min(item["dates_watered"])).days
+        if dates_owned > 0:
+            freq = len(item["dates_watered"]) / dates_owned
+        else:
+            freq = 1
+        item["watering_frequency"] = freq
+
     return items
 
 
