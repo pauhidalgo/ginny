@@ -5,7 +5,7 @@ import pandas as pd
 import pymongo
 import streamlit as st
 
-from plots import TimelinePlot
+from plots import HoverTimelinePlot
 
 # Set page name and icon
 st.set_page_config(page_title="Ginny", page_icon="🌱")
@@ -146,5 +146,5 @@ for item in items:
 # Add plot under expander for mobile
 st.markdown("## Data viz")
 with st.expander("Display", expanded=False):
-    tplot = TimelinePlot(items)
-    st.pyplot(fig=tplot.get_fig())
+    htplot = HoverTimelinePlot(items)
+    st.plotly_chart(htplot.get_fig())
